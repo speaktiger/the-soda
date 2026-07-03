@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SpeakTiger – The Soda</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f0e0c;--card:#181613;--accent:#e8c97a;--accent2:#c97a5e;
+  --text:#f0ead8;--muted:#6e6860;--border:#272420;--radius:6px;
+}
+html,body{height:100%;max-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden;position:fixed;width:100%;}
+body{display:flex;flex-direction:column;align-items:center;height:100%;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+.app{position:relative;z-index:1;width:100%;max-width:480px;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+.nav-icon{font-size:24px;line-height:1;cursor:pointer;color:var(--text);opacity:0.7;background:none;border:none;padding:4px 8px;font-family:inherit;-webkit-tap-highlight-color:transparent;visibility:hidden;}
+.nav-icon.visible{visibility:visible;}
+.nav-icon:active{opacity:1;}
+.topbar-logo{height:32px;width:auto;object-fit:contain;max-width:160px;}
+.topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;min-height:52px;flex-shrink:0;}
+.topbar-left{display:flex;align-items:center;min-width:80px;}
+.topbar-center{font-family:'Playfair Display',serif;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);opacity:0.45;}
+.topbar-right{min-width:80px;display:flex;justify-content:flex-end;}
+.nav-btn,.home-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0.05em;cursor:pointer;padding:6px 0;display:flex;align-items:center;gap:5px;transition:color 0.2s;-webkit-tap-highlight-color:transparent;visibility:hidden;}
+.nav-btn.visible,.home-btn.visible{visibility:visible;}
+.nav-btn:active,.home-btn:active{color:var(--text);}
+
+/* CONTENT */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;gap:20px;animation:fadeUp 0.3s ease;position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:20px 24px 36px;box-sizing:border-box;}
+.screen.active{display:flex;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* TYPE */
+.eyebrow{font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);opacity:0.7;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(28px,7vw,42px);line-height:1.12;font-weight:400;}
+h1 em{font-style:italic;color:var(--accent);}
+h2{font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,26px);line-height:1.25;font-weight:400;}
+h2 em{font-style:italic;color:var(--accent);}
+.body-text{font-size:16px;line-height:1.7;color:var(--text);opacity:0.85;}
+.muted-text{font-size:13px;line-height:1.6;color:var(--muted);}
+
+/* PLAYER LABEL */
+.player-label{font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,32px);font-weight:400;color:var(--accent);letter-spacing:0.03em;}
+.player-sublabel{font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+
+/* RULES */
+.rules-list{display:flex;flex-direction:column;gap:10px;list-style:none;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);}
+.rules-list li{font-size:14px;line-height:1.55;color:var(--text);opacity:0.8;padding-left:0;}
+
+/* EMOJI RULES */
+.emoji-rules{display:flex;flex-direction:column;gap:10px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);}
+.emoji-rules li{font-size:14px;line-height:1.55;color:var(--text);opacity:0.85;list-style:none;display:flex;gap:10px;align-items:flex-start;}
+.emoji-rules li span.ico{flex-shrink:0;width:20px;text-align:center;}
+
+/* STEP RULES */
+.intro-block{border-color:rgba(232,201,122,0.15)!important;background:rgba(232,201,122,0.04)!important;}
+.intro-text{font-size:15px;line-height:1.65;color:var(--text);opacity:0.75;}
+.step-rules{display:flex;flex-direction:column;gap:14px;}
+.step-block{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:6px;}
+.step-num{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);opacity:0.7;}
+.step-title{font-size:15px;font-weight:500;color:var(--text);}
+.step-body{font-size:13px;line-height:1.6;color:var(--muted);}
+.step-body li{list-style:none;padding-left:14px;position:relative;margin-top:3px;}
+.step-body li::before{content:'–';position:absolute;left:0;color:var(--accent);opacity:0.5;}
+
+/* OPTIONS TEXT */
+.options-text{display:flex;flex-direction:column;gap:10px;}
+.option-text-item{padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);font-size:14px;line-height:1.45;color:var(--text);opacity:0.85;}
+
+/* THIS OR THAT */
+.tot-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 20px;display:flex;flex-direction:column;gap:12px;}
+.tot-divider{text-align:center;color:var(--muted);font-size:12px;letter-spacing:0.15em;text-transform:uppercase;}
+.tot-side{padding:14px 18px;font-family:'Playfair Display',serif;font-size:15px;line-height:1.4;color:var(--text);}
+
+/* PICK A SIDE */
+.side-card{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.side-btn{padding:26px 14px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-family:'Playfair Display',serif;font-size:15px;line-height:1.3;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;min-height:110px;}
+.side-label{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);font-family:'DM Sans',sans-serif;}
+.side-btn.left-side{border-color:var(--accent);}
+.side-btn.right-side{border-color:var(--accent2);}
+
+/* PICKER */
+.picker{display:flex;gap:10px;flex-wrap:wrap;}
+.picker-btn{width:52px;height:52px;border-radius:50%;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-family:'Playfair Display',serif;font-size:19px;cursor:pointer;transition:all 0.18s;-webkit-tap-highlight-color:transparent;}
+.picker-btn:active{border-color:var(--accent);color:var(--accent);}
+.picker-btn.selected{background:var(--accent);border-color:var(--accent);color:#0f0e0c;font-weight:700;}
+
+/* BUTTONS */
+.btn{width:100%;padding:15px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.18s;-webkit-tap-highlight-color:transparent;}
+.btn-primary{background:var(--accent);border:1.5px solid var(--accent);color:#0f0e0c;font-weight:500;}
+.btn-primary:active{opacity:0.85;}
+.btn-primary:disabled{opacity:0.3;cursor:not-allowed;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);}
+.btn-outline:active{border-color:var(--text);}
+.btn-finish{background:transparent;border:1.5px solid var(--accent2);color:var(--accent2);}
+.btn-finish:active{background:var(--accent2);color:#0f0e0c;}
+.skip-link{text-align:center;font-size:12px;color:var(--muted);cursor:pointer;letter-spacing:0.05em;padding:4px 0;-webkit-tap-highlight-color:transparent;text-decoration:underline;text-decoration-color:rgba(110,104,96,0.3);}
+.skip-link:active{color:var(--text);}
+
+/* PROGRESS */
+.progress-wrap{display:flex;flex-direction:column;gap:7px;}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.progress-bar{width:100%;height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:1px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1);}
+
+/* IMAGE PLACEHOLDER */
+.round-img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--radius);display:block;}
+.logo-img{max-width:220px;width:100%;height:auto;display:block;margin:0 auto;}
+.img-placeholder{width:100%;aspect-ratio:16/9;background:var(--card);border:1.5px dashed var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;}
+
+/* TRANSITION */
+.transition-screen{text-align:center;align-items:center;gap:24px;justify-content:center;position:relative;overflow:hidden;min-height:60vh;}
+.transition-ornament{font-family:'Playfair Display',serif;font-size:30px;color:var(--accent);opacity:0.4;animation:pulse 2s ease-in-out infinite;position:relative;z-index:1;}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.7}}
+.transition-text{font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,28px);line-height:1.45;text-align:center;font-style:italic;position:relative;z-index:1;}
+.countdown{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);position:relative;z-index:1;}
+.btn-skip-trans{background:transparent;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;padding:12px 32px;border-radius:var(--radius);transition:all 0.2s;-webkit-tap-highlight-color:transparent;position:relative;z-index:1;}
+.btn-skip-trans:active{border-color:var(--text);color:var(--text);}
+
+/* BUBBLES */
+.bubbles{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+.bubble{position:absolute;bottom:-30px;border-radius:50%;background:rgba(232,201,122,0.1);animation:riseUp linear infinite;}
+@keyframes riseUp{0%{transform:translateY(0) scale(1);opacity:0.8;}100%{transform:translateY(-120vh) scale(0.5);opacity:0;}}
+
+/* TIMER */
+.timer-display{text-align:center;padding:22px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);}
+.timer-digits{font-family:'Playfair Display',serif;font-size:52px;color:var(--accent);letter-spacing:0.05em;line-height:1;transition:color 0.3s;}
+.timer-digits.urgent{color:var(--accent2);}
+.timer-label{font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+
+/* THINK TIMER */
+.think-timer{text-align:center;padding:26px 20px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;gap:8px;align-items:center;}
+.think-digits{font-family:'Playfair Display',serif;font-size:60px;color:var(--accent);line-height:1;transition:color 0.3s;}
+.think-digits.urgent{color:var(--accent2);}
+.think-sublabel{font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);}
+.think-note{font-size:12px;color:var(--muted);line-height:1.5;text-align:center;}
+
+/* PAIRS */
+.pairs-graphic{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:7px;}
+.pair-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:4px;background:rgba(255,255,255,0.02);}
+.pair-dot{width:27px;height:27px;border-radius:50%;background:var(--accent);color:#0f0e0c;font-family:'Playfair Display',serif;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pair-dot.c2{background:var(--accent2);}.pair-dot.c3{background:#7a9ec9;}.pair-dot.c4{background:#9ec97a;}.pair-dot.c5{background:#c97ab8;}.pair-dot.c6{background:#7ac9c4;}
+.pair-plus{color:var(--muted);font-size:12px;}
+.pair-label{font-size:12px;color:var(--muted);margin-left:auto;letter-spacing:0.05em;}
+.pair-name{font-size:13px;color:var(--text);opacity:0.65;}
+
+/* FORM INPUTS */
+.form-group{display:flex;flex-direction:column;gap:8px;}
+.form-label{font-size:15px;color:var(--text);opacity:0.9;display:flex;align-items:center;gap:8px;}
+.form-label em{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px;display:block;}
+.form-input{width:100%;padding:13px 16px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;resize:none;}
+.form-input:focus{border-color:var(--accent);}
+.form-input::placeholder{color:var(--muted);opacity:0.6;}
+textarea.form-input{min-height:80px;line-height:1.5;}
+.form-note{font-size:12px;color:var(--muted);line-height:1.6;text-align:center;}
+.soda-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:12px;}
+.soda-card-row{font-size:14px;color:var(--text);line-height:1.5;display:flex;gap:10px;align-items:flex-start;}
+.soda-card-row .ico{flex-shrink:0;}
+.btn-whatsapp{width:100%;padding:15px;border-radius:var(--radius);background:#25D366;border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-weight:500;transition:opacity 0.2s;-webkit-tap-highlight-color:transparent;}
+.btn-whatsapp:active{opacity:0.85;}
+
+/* LANDSCAPE SMALL SCREEN */
+@media (orientation: landscape) and (max-height: 500px) {
+  .app { display: none; }
+  .rotate-msg { display: flex !important; }
+}
+.rotate-msg {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--bg);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 9999;
+  text-align: center;
+  padding: 24px;
+}
+.rotate-msg .rotate-icon { font-size: 48px; animation: rotateHint 2s ease-in-out infinite; }
+@keyframes rotateHint { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-90deg)} }
+.rotate-msg p { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text); opacity: 0.8; line-height: 1.4; }
+.rotate-msg span { font-size: 13px; color: var(--muted); }
+
+/* EYEBROW ITALIC */
+.eyebrow-italic{font-size:15px;line-height:1.4;color:var(--accent);font-family:'Playfair Display',serif;font-style:italic;margin-bottom:4px;}
+.eyebrow-italic em{font-style:italic;}
+
+/* PLAYER CIRCLE */
+.player-circle{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#0f0e0c;flex-shrink:0;}
+.player-heading{display:flex;align-items:center;gap:10px;}
+
+/* GROUP CIRCLES */
+.group-circles{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.group-circles .gc{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:#0f0e0c;}
+.group-circles .gc-gap{width:28px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;opacity:0.4;}
+
+/* ROUND LIST */
+.round-list{display:flex;flex-direction:column;gap:4px;width:100%;}
+.round-list-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.round-list-item:active{opacity:0.7;}
+.round-list-num{font-family:'Playfair Display',serif;font-size:16px;color:var(--accent);min-width:20px;}
+.round-list-name{flex:1;font-size:13px;color:var(--text);}
+.round-list-arrow{font-size:18px;color:var(--muted);opacity:0.5;}
+
+/* PAIRING TEXT LIST */
+.pairing-text-list{display:flex;flex-direction:column;gap:8px;width:100%;}
+.pairing-text-row{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);opacity:0.85;}
+.pairing-text-row .grp-tag{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);min-width:50px;}
+.pairing-text-row .grp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* TABLE ANIMATION */
+.table-anim-wrap{width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.table-anim-wrap svg{width:100%;max-width:300px;height:auto;}
+.table-anim-note{font-size:14px;color:var(--muted);text-align:center;line-height:1.6;}
+
+/* ARROW CHAIN */
+.arrow-chain{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);}
+.arrow-letter{font-family:'Playfair Display',serif;font-size:18px;color:var(--accent);font-weight:700;}
+.arrow-sep{color:var(--muted);font-size:14px;}
+
+/* SPLASH */
+.splash-logo{font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:400;color:var(--accent);letter-spacing:0.02em;}
+.splash-sub{font-family:'Playfair Display',serif;font-size:clamp(18px,4vw,24px);font-style:italic;color:var(--text);opacity:0.5;}
+
+/* END */
+.end-screen{text-align:center;align-items:center;gap:24px;padding-top:16px;justify-content:flex-start;}
+.end-ornament{font-family:'Playfair Display',serif;font-size:36px;color:var(--accent);opacity:0.3;}
+.end-title{font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,38px);line-height:1.2;}
+.end-title em{font-style:italic;color:var(--accent);}
+.end-sub{font-size:14px;color:var(--muted);line-height:1.75;}
+.end-brand{font-family:'Playfair Display',serif;font-size:12px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted);opacity:0.35;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="rotate-msg">
+  <div class="rotate-icon">📱</div>
+  <p>Please rotate your phone<br>to portrait mode.</p>
+  <span>This game is designed for vertical screens.</span>
+</div>
+<div class="app">
+  <div class="topbar">
+    <button id="back-btn" class="nav-icon" onclick="goBack()">‹</button>
+    <img id="topbar-logo-img" src="img-logo-sq.png" alt="SpeakTiger" class="topbar-logo">
+    <button id="home-btn" class="nav-icon" onclick="goHome()">⌂</button>
+  </div>
+  <div class="content">
+
+    <!-- 0.01 SPLASH -->
+    <div class="screen active" id="s-0-01">
+      <img src="img-splash.jpg" alt="" class="round-img" style="margin-top:8px" loading="lazy">
+      <button class="btn btn-primary" style="margin-top:4px" onclick="goto('s-0-1')">Start →</button>
+    </div>
+
+    <!-- 0.1 GUEST COUNT -->
+    <div class="screen" id="s-0-1">
+      <div class="eyebrow">Welcome</div>
+      <h1>How many<br><em>guests</em><br>tonight?</h1>
+      <div class="picker" id="picker"></div>
+      <button class="btn btn-primary" id="btn-0-1" disabled onclick="goto('s-0-2')">Continue</button>
+    </div>
+
+    <!-- 0.2 RULES -->
+    <div class="screen" id="s-0-2">
+      <div class="eyebrow">Before you begin</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-block intro-block"><p class="intro-text">🥤 Welcome to The Soda.</p></div>
+      <ul class="emoji-rules">
+        <li><span class="ico">📱</span><span>Use one phone for the table</span></li>
+        <li><span class="ico">🤫</span><span>What's said here, stays here</span></li>
+        <li><span class="ico">❌</span><span>No private questions — you can always skip</span></li>
+        <li><span class="ico">🚪</span><span>Late arrival? Restart the app and open the round you were playing</span></li>
+      </ul>
+      <button class="btn btn-primary" onclick="goto('s-0-2b')">Got it</button>
+    </div>
+
+    <!-- 0.2b ROUND LIST -->
+    <div class="screen" id="s-0-2b">
+      <div class="eyebrow">Tonight's flow</div>
+      <h2>Your <em>10 rounds</em></h2>
+      <div class="round-list">
+        <div class="round-list-item" onclick="goto('s-0-3')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 1.</em> Arrivals <span style="color:#4caf7d;font-size:11px;font-style:normal;letter-spacing:0.05em">(start here)</span></span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-2-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 2.</em> First Impressions</span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-3-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 3.</em> This or That</span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-4-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 4.</em> Side Talks</span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-5-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 5.</em> The Moment That Shaped You</span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-6-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 6.</em> Pick a Side</span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-7-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 7.</em> What's New?</span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-8-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 8.</em> Ask Anyone</span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-9-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 9.</em> The Soda Bubbles</span><span class="round-list-arrow">›</span></div>
+        <div class="round-list-item" onclick="goto('s-10-1')"><span class="round-list-name"><em style="color:var(--accent);font-family:'Playfair Display',serif">Round 10.</em> Off Script</span><span class="round-list-arrow">›</span></div>
+      </div>
+    </div>
+
+        <div class="screen" id="s-0-3">
+      <div class="eyebrow">Round 1</div>
+      <h1><em>Arrivals</em></h1>
+      <img src="img-r1-arrivals.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">A quick hello before the stories begin.</p>
+      <button class="btn btn-primary" onclick="goto('s-1-1')">Start →</button>
+    </div>
+
+    <!-- 1.1 ARRIVALS -->
+    <div class="screen" id="s-1-1">
+      <div class="eyebrow">Round 1 · Arrivals</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">Start with the basics so everyone can join in easily.<br>No need to impress anyone.<br>Just give the table a first sense of who you are.</p></div>
+        <div class="step-block">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">📱 The phone owner starts</div>
+          <ul class="step-body">
+            <li>On the next screen you will have a question</li>
+            <li>Answer it. Keep it simple and light</li>
+          </ul>
+        </div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">🔄 Pass it clockwise</div>
+          <ul class="step-body">
+            <li>Each person takes their turn</li>
+            <li>You'll have a few minutes ⏱️</li>
+            <li>Click Finish when everyone is done</li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-1-1-go')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-2-1')">Skip the round</div>
+    </div>
+
+    <!-- 1.1 go — arrivals action screen -->
+    <div class="screen" id="s-1-1-go">
+      <div class="eyebrow">Round 1 · Arrivals</div>
+      <h2>Introduce yourself and <em>say:</em></h2>
+      <ul class="emoji-rules">
+        <li><span class="ico">👋</span><span>Your name</span></li>
+        <li><span class="ico">💼</span><span>What you do</span></li>
+        <li><span class="ico">📍</span><span>What brought you here</span></li>
+        <li><span class="ico">📱</span><span>The phone owner starts, then go clockwise</span></li>
+        <li><span class="ico">⏱️</span><span>Total time: 10 minutes</span></li>
+      </ul>
+      <div class="timer-display"><div class="timer-digits" id="t-1-1">10:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-1-2')">Finish the round</button>
+    </div>
+
+    <!-- 1.2 TRANSITION -->
+    <div class="screen transition-screen" id="s-1-2">
+      <div class="bubbles" id="bub-1-2"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">Good.<br>Now you're not<br>strangers anymore.</div>
+      <div class="countdown" id="cd-1-2"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-2-1')">Skip</button>
+    </div>
+
+    <!-- 2.1 ROUND 2 INTRO -->
+    <div class="screen" id="s-2-1">
+      <div class="eyebrow">Round 2</div>
+      <h1><em>First<br>Impressions</em></h1>
+      <img src="img-r2-first-impressions.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">A small guess about the person next to you.</p>
+      <button class="btn btn-primary" onclick="goto('s-2-2-1')">Start →</button>
+    </div>
+
+    <!-- 2.2.1 TABLE ANIMATION -->
+    <div class="screen" id="s-2-2-1">
+      <div class="eyebrow">Round 2 · Your seat</div>
+      <div class="table-anim-wrap">
+        <svg id="table-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="arrow-chain-wrap"></div>
+        <div class="table-anim-note">
+          <strong style="color:var(--text)">Remember your letter.</strong><br>
+          Always go clockwise.
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-2-2')">Next →</button>
+    </div>
+
+    <!-- 2.2 RULES -->
+    <div class="screen" id="s-2-2">
+      <div class="eyebrow">Round 2 · How it works</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round is about first impressions.<br>You'll make a little guess about the person next to you.</p></div>
+        <div class="step-block">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">📱 Phone owner starts — you're Player A</div>
+          <ul class="step-body"><li>What impression does the person on your left give you? Choose one option and explain.</li></ul>
+        </div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">💬 Player B, was Player A right?</div>
+        </div>
+        <div class="step-block">
+          <div class="step-num">Step 3</div>
+          <div class="step-title">💬 Player B, what is your impression of the next person?</div>
+        </div>
+        <div class="step-block">
+          <div class="step-title">Continue clockwise until everyone has guessed and responded.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="startR2()">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-3-1')">Skip the round</div>
+    </div>
+
+    <!-- 2.G/R DYNAMIC -->
+    <div class="screen" id="s-2-gr"></div>
+
+    <!-- 2.X TRANSITION -->
+    <div class="screen transition-screen" id="s-2-x">
+      <div class="bubbles" id="bub-2-x"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">Some guesses landed.<br>Some revealed<br>better stories.</div>
+      <div class="countdown" id="cd-2-x"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-3-1')">Skip</button>
+    </div>
+
+    <!-- 3.1 -->
+    <div class="screen" id="s-3-1">
+      <div class="eyebrow">Round 3</div>
+      <h1><em>This<br>or That</em></h1>
+      <img src="img-r3-this-or-that.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">Two options. One story from your life.</p>
+      <button class="btn btn-primary" onclick="goto('s-3-2')">Start →</button>
+    </div>
+
+    <!-- 3.2 -->
+    <div class="screen" id="s-3-2">
+      <div class="eyebrow">Round 3 · How it works</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">You'll get two simple options. Pick one. Tell a story.</p></div>
+        <div class="step-block">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">📱 Phone owner starts</div>
+          <ul class="step-body"><li>Two options appear. Pick one and tell the story. Tap Next.</li></ul>
+        </div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">🔄 Next person does the same.</div>
+          <ul class="step-body"><li>Keep going clockwise until everyone has shared.</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="startR3()">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-4-1')">Skip the round</div>
+    </div>
+
+    <!-- 3.S DYNAMIC -->
+    <div class="screen" id="s-3-s"></div>
+
+    <!-- 3.T -->
+    <div class="screen transition-screen" id="s-3-t">
+      <div class="bubbles" id="bub-3-t"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">Now there are<br>stories on the table.</div>
+      <div class="countdown" id="cd-3-t"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-4-1')">Skip</button>
+    </div>
+
+    <!-- 4.1 -->
+    <div class="screen" id="s-4-1">
+      <div class="eyebrow">Round 4</div>
+      <h1><em>Side<br>Talks</em></h1>
+      <img src="img-r4-side-talks.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">The conversation gets a little closer.</p>
+      <button class="btn btn-primary" onclick="startR4()">Start →</button>
+    </div>
+
+    <!-- 4.2 -->
+    <div class="screen" id="s-4-2">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round gives you a question.<br>No need to rush the answer.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🗣️ Stay together as a group</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">💬 Discuss together</div>
+          <ul class="step-body">
+            <li>On the next screen you'll get one question</li>
+            <li>You'll have a few minutes ⏱️</li>
+            <li>Click Finish when you're done talking</li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-4-2-1')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-2-1">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What's a small moment from recently that made you smile, think, or pause?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-4-2">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-4-t')">Finish the round</button>
+    </div>
+
+    <!-- 4.3 -->
+    <div class="screen" id="s-4-3">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round gives you a question.<br>No need to rush the answer.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🗣️ Stay together as a group</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">💬 Discuss together</div>
+          <ul class="step-body">
+            <li>On the next screen you'll get one question</li>
+            <li>You'll have a few minutes ⏱️</li>
+            <li>Click Finish when you're done talking</li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-4-3-1')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-3-1">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What's a small moment from recently that made you smile, think, or pause?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-4-3">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-4-t')">Finish the round</button>
+    </div>
+
+    <!-- 4.4 (4 players): table animation -->
+    <div class="screen" id="s-4-4">
+      <div class="eyebrow">Round 4 · Your seat</div>
+      <div class="table-anim-wrap">
+        <svg id="table-svg-4-4" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="table-anim-note"><strong style="color:var(--text)">Remember your letter.</strong></div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-4-4-1')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-4-1">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <h2>Split into <em>pairs</em></h2>
+      <div class="table-anim-wrap">
+        <svg id="pairing-svg-4-4" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="pairing-text-list" id="pairing-text-4-4"></div>
+      </div>
+      <p class="muted-text">Each pair gets a question to discuss.</p>
+      <button class="btn btn-outline" onclick="goto('s-4-4-r')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-4-r">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round breaks the table into smaller groups.<br>One question, a few minutes, no need to perform.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🪑 Divide into groups</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Discuss the question on the next screen.</div>
+          <ul class="step-body"><li>Click Finish when everyone is done</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-4-4-2')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-4-2">
+      <div class="group-circles"><span class="gc" style="background:#e8c97a">A</span><span class="gc" style="background:#7a9ec9">C</span><span class="gc-gap">·</span><span class="gc" style="background:#c97a5e">B</span><span class="gc" style="background:#9ec97a">D</span></div>
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What's a small moment from recently that made you smile, think, or pause?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-4-4">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-4-t')">Finish the round</button>
+    </div>
+
+    <!-- 4.5 (5 players) -->
+    <div class="screen" id="s-4-5">
+      <div class="eyebrow">Round 4 · Your seat</div>
+      <div class="table-anim-wrap">
+        <svg id="table-svg-4-5" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="table-anim-note"><strong style="color:var(--text)">Remember your letter.</strong></div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-4-5-1')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-5-1">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <h2>Split into a <em>pair + trio</em></h2>
+      <div class="table-anim-wrap">
+        <svg id="pairing-svg-4-5" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="pairing-text-list" id="pairing-text-4-5"></div>
+      </div>
+      <p class="muted-text">Each group gets a question to discuss.</p>
+      <button class="btn btn-outline" onclick="goto('s-4-5-r')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-5-r">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round breaks the table into smaller groups.<br>One question, a few minutes, no need to perform.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🪑 Divide into groups</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Discuss the question on the next screen.</div>
+          <ul class="step-body"><li>Click Finish when everyone is done</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-4-5-2')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-5-2">
+      <div class="group-circles"><span class="gc" style="background:#e8c97a">A</span><span class="gc" style="background:#7a9ec9">C</span><span class="gc-gap">·</span><span class="gc" style="background:#c97a5e">B</span><span class="gc" style="background:#9ec97a">D</span><span class="gc" style="background:#c97ab8">E</span></div>
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What's a small moment from recently that made you smile, think, or pause?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-4-5">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-4-t')">Finish the round</button>
+    </div>
+
+    <!-- 4.6 (6 players) -->
+    <div class="screen" id="s-4-6">
+      <div class="eyebrow">Round 4 · Your seat</div>
+      <div class="table-anim-wrap">
+        <svg id="table-svg-4-6" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="table-anim-note"><strong style="color:var(--text)">Remember your letter.</strong></div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-4-6-1')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-6-1">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <h2>Split into <em>3 pairs</em></h2>
+      <div class="table-anim-wrap">
+        <svg id="pairing-svg-4-6" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="pairing-text-list" id="pairing-text-4-6"></div>
+      </div>
+      <p class="muted-text">Each pair gets a question to discuss.</p>
+      <button class="btn btn-outline" onclick="goto('s-4-6-r')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-6-r">
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round breaks the table into smaller groups.<br>One question, a few minutes, no need to perform.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🪑 Divide into groups</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Discuss the question on the next screen.</div>
+          <ul class="step-body"><li>Click Finish when everyone is done</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-4-6-2')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-5-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-4-6-2">
+      <div class="group-circles"><span class="gc" style="background:#e8c97a">A</span><span class="gc" style="background:#9ec97a">D</span><span class="gc-gap">·</span><span class="gc" style="background:#c97a5e">B</span><span class="gc" style="background:#c97ab8">E</span><span class="gc-gap">·</span><span class="gc" style="background:#7a9ec9">C</span><span class="gc" style="background:#7ac9c4">F</span></div>
+      <div class="eyebrow">Round 4 · Side Talks</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What's a small moment from recently that made you smile, think, or pause?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-4-6">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-4-t')">Finish the round</button>
+    </div>
+
+    <!-- 4.T -->
+    <div class="screen transition-screen" id="s-4-t">
+      <div class="bubbles" id="bub-4-t"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">A few side stories<br>are now<br>between you.</div>
+      <div class="countdown" id="cd-4-t"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-5-1')">Skip</button>
+    </div>
+
+    <!-- 5.1 -->
+    <div class="screen" id="s-5-1">
+      <div class="eyebrow">Round 5</div>
+      <h1><em>The Moment<br>That Shaped You</em></h1>
+      <img src="img-r5-the-moment.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">One question. Ninety seconds to think. Then share.</p>
+      <button class="btn btn-primary" onclick="goto('s-5-2')">Start →</button>
+    </div>
+
+    <!-- 5.2 -->
+    <div class="screen" id="s-5-2">
+      <div class="eyebrow">Round 5 · How it works</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round gives everyone a little time to reflect.<br>Choose a real moment from your life.</p></div>
+        <div class="step-block">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">⏱️ Think quietly. You'll get one question and 90 seconds to think.</div>
+        </div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">💬 Share in turns, clockwise.</div>
+          <ul class="step-body"><li>Phone owner starts. Share only what you're comfortable with.</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-5-3')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-6-1')">Skip the round</div>
+    </div>
+
+    <!-- 5.3 -->
+    <div class="screen" id="s-5-3">
+      <div class="eyebrow">Round 5 · Think first</div>
+      <p class="body-text">Take a moment for yourself.</p>
+      <h2><em>Think of a moment from your past that became part of who you are.</em></h2>
+      <div class="think-timer">
+        <div class="think-digits" id="t-5-3">1:30</div>
+        <div class="think-sublabel">Thinking time ⏱️</div>
+      </div>
+      <p class="think-note">Quiet time. No talking yet 🤫</p>
+      <button class="btn-skip-trans" onclick="skipTo('s-5-4')" style="align-self:center">Skip</button>
+    </div>
+
+    <!-- 5.4 -->
+    <div class="screen" id="s-5-4">
+      <div class="eyebrow">Round 5 · Share</div>
+      <h2>What was the moment <em>that shaped you?</em></h2>
+      <ul class="emoji-rules">
+        <li><span class="ico">💬</span><span>Go around the table and share your story</span></li>
+        <li><span class="ico">📱</span><span>The phone owner starts, then go clockwise</span></li>
+        <li><span class="ico">🤍</span><span>Share only what you're comfortable sharing</span></li>
+        <li><span class="ico">⏱️</span><span>Total time: 10 minutes</span></li>
+      </ul>
+      <div class="timer-display"><div class="timer-digits" id="t-5-4">10:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-5-t')">Finish the round</button>
+    </div>
+
+    <!-- 5.T -->
+    <div class="screen transition-screen" id="s-5-t">
+      <div class="bubbles" id="bub-5-t"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">That was real.<br>Take a breath.</div>
+      <div class="countdown" id="cd-5-t"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-6-1')">Skip</button>
+    </div>
+
+    <!-- 6.1 -->
+    <div class="screen" id="s-6-1">
+      <div class="eyebrow">Round 6</div>
+      <h1><em>Pick<br>a Side</em></h1>
+      <img src="img-r6-pick-a-side.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">No talking. No explaining. Just choose.</p>
+      <button class="btn btn-primary" onclick="goto('s-6-2')">Start →</button>
+    </div>
+
+    <!-- 6.2 -->
+    <div class="screen" id="s-6-2">
+      <div class="eyebrow">Round 6 · How it works</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round is about the things you like.<br>Pick a side. No talking needed.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">👇 Two options appear. Place your finger next to your choice.</div></div>
+        <div class="step-block"><div class="step-num">Step 2</div><div class="step-title">👀 Look around. See who's on your side. No explanation needed.</div></div>
+        <div class="step-block"><div class="step-num">Step 3</div><div class="step-title">➡️ Move to the next one.</div></div>
+      </div>
+      <button class="btn btn-primary" onclick="startR6()">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-7-1')">Skip the round</div>
+    </div>
+
+    <!-- 6.X DYNAMIC -->
+    <div class="screen" id="s-6-x"></div>
+
+    <!-- 6.T -->
+    <div class="screen transition-screen" id="s-6-t">
+      <div class="bubbles" id="bub-6-t"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">Good.<br>The room<br>has opinions.</div>
+      <div class="countdown" id="cd-6-t"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-7-1')">Skip</button>
+    </div>
+
+    <!-- 7.1 -->
+    <div class="screen" id="s-7-1">
+      <div class="eyebrow">Round 7</div>
+      <h1><em>What's<br>New?</em></h1>
+      <img src="img-r7-whats-new.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">What's alive in your life right now.</p>
+      <button class="btn btn-primary" onclick="startR7()">Start →</button>
+    </div>
+
+    <!-- 7.2 -->
+    <!-- 7.2 (2p) -->
+    <div class="screen" id="s-7-2">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round is about what's active in your life right now.<br>Something you're learning, making, exploring, or overthinking.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🗣️ Stay together as a group</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">💬 Discuss together</div>
+          <ul class="step-body">
+            <li>On the next screen you'll get one question</li>
+            <li>You'll have a few minutes ⏱️</li>
+            <li>Click Finish when you're done talking</li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-7-2-1')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+
+    <!-- 7.3 (3p) -->
+    <div class="screen" id="s-7-3">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round is about what's active in your life right now.<br>Something you're learning, making, exploring, or overthinking.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🗣️ Stay together as a group</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">💬 Discuss together</div>
+          <ul class="step-body">
+            <li>On the next screen you'll get one question</li>
+            <li>You'll have a few minutes ⏱️</li>
+            <li>Click Finish when you're done talking</li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-7-3-1')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+
+    <!-- 7.4 (4p): table animation -->
+    <div class="screen" id="s-7-4">
+      <div class="eyebrow">Round 7 · Your seat</div>
+      <div class="table-anim-wrap">
+        <svg id="table-svg-7-4" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="table-anim-note"><strong style="color:var(--text)">Remember your letter.</strong></div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-7-4-1')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-7-4-1">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <h2>Split into <em>pairs</em></h2>
+      <div class="table-anim-wrap">
+        <svg id="pairing-svg-7-4" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="pairing-text-list" id="pairing-text-7-4"></div>
+      </div>
+      <p class="muted-text">Each pair gets a question to discuss.</p>
+      <button class="btn btn-outline" onclick="goto('s-7-4-r')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-7-4-r">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round is about what's active in your life right now.<br>Something you're learning, making, exploring, or overthinking.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🪑 Divide into groups</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Discuss the question on the next screen.</div>
+          <ul class="step-body"><li>Click Finish when everyone is done</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-7-4-2')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+
+    <!-- 7.5 (5p) -->
+    <div class="screen" id="s-7-5">
+      <div class="eyebrow">Round 7 · Your seat</div>
+      <div class="table-anim-wrap">
+        <svg id="table-svg-7-5" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="table-anim-note"><strong style="color:var(--text)">Remember your letter.</strong></div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-7-5-1')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-7-5-1">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <h2>Split into a <em>pair + trio</em></h2>
+      <div class="table-anim-wrap">
+        <svg id="pairing-svg-7-5" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="pairing-text-list" id="pairing-text-7-5"></div>
+      </div>
+      <p class="muted-text">Each group gets a question to discuss.</p>
+      <button class="btn btn-outline" onclick="goto('s-7-5-r')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-7-5-r">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round is about what's active in your life right now.<br>Something you're learning, making, exploring, or overthinking.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🪑 Divide into groups</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Discuss the question on the next screen.</div>
+          <ul class="step-body"><li>Click Finish when everyone is done</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-7-5-2')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+
+    <!-- 7.6 (6p) -->
+    <div class="screen" id="s-7-6">
+      <div class="eyebrow">Round 7 · Your seat</div>
+      <div class="table-anim-wrap">
+        <svg id="table-svg-7-6" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="table-anim-note"><strong style="color:var(--text)">Remember your letter.</strong></div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-7-6-1')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-7-6-1">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <h2>Split into <em>3 pairs</em></h2>
+      <div class="table-anim-wrap">
+        <svg id="pairing-svg-7-6" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="pairing-text-list" id="pairing-text-7-6"></div>
+      </div>
+      <p class="muted-text">Each pair gets a question to discuss.</p>
+      <button class="btn btn-outline" onclick="goto('s-7-6-r')">Next →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+    <div class="screen" id="s-7-6-r">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This round is about what's active in your life right now.<br>Something you're learning, making, exploring, or overthinking.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">🪑 Divide into groups</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Discuss the question on the next screen.</div>
+          <ul class="step-body"><li>Click Finish when everyone is done</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-7-6-2')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-8-1')">Skip the round</div>
+    </div>
+
+        <div class="screen" id="s-7-2-1">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What are you learning, making, exploring, or overthinking lately?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-7-2">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-7-t')">Finish the round</button>
+    </div>
+
+    <div class="screen" id="s-7-3-1">
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What are you learning, making, exploring, or overthinking lately?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-7-3">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-7-t')">Finish the round</button>
+    </div>
+
+    <div class="screen" id="s-7-4-2">
+      <div class="group-circles"><span class="gc" style="background:#e8c97a">A</span><span class="gc" style="background:#c97a5e">B</span><span class="gc-gap">·</span><span class="gc" style="background:#7a9ec9">C</span><span class="gc" style="background:#9ec97a">D</span></div>
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What are you learning, making, exploring, or overthinking lately?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-7-4">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-7-t')">Finish the round</button>
+    </div>
+
+    <div class="screen" id="s-7-5-2">
+      <div class="group-circles"><span class="gc" style="background:#e8c97a">A</span><span class="gc" style="background:#9ec97a">D</span><span class="gc-gap">·</span><span class="gc" style="background:#c97a5e">B</span><span class="gc" style="background:#7a9ec9">C</span><span class="gc" style="background:#c97ab8">E</span></div>
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What are you learning, making, exploring, or overthinking lately?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-7-5">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-7-t')">Finish the round</button>
+    </div>
+
+    <div class="screen" id="s-7-6-2">
+      <div class="group-circles"><span class="gc" style="background:#e8c97a">A</span><span class="gc" style="background:#c97ab8">E</span><span class="gc-gap">·</span><span class="gc" style="background:#c97a5e">B</span><span class="gc" style="background:#7ac9c4">F</span><span class="gc-gap">·</span><span class="gc" style="background:#7a9ec9">C</span><span class="gc" style="background:#9ec97a">D</span></div>
+      <div class="eyebrow">Round 7 · What's New?</div>
+      <p class="body-text">Discuss with your group:</p>
+      <h2><em>What are you learning, making, exploring, or overthinking lately?</em></h2>
+      <div class="timer-display"><div class="timer-digits" id="t-7-6">5:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-7-t')">Finish the round</button>
+    </div>
+
+    <!-- 7.T -->
+    <div class="screen transition-screen" id="s-7-t">
+      <div class="bubbles" id="bub-7-t"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">Good. Now you know<br>what to ask<br>about later.</div>
+      <div class="countdown" id="cd-7-t"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-8-1')">Skip</button>
+    </div>
+
+    <!-- 8.1 -->
+    <div class="screen" id="s-8-1">
+      <div class="eyebrow">Round 8</div>
+      <h1><em>Ask<br>Anyone</em></h1>
+      <img src="img-r8-ask-anyone.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">One question. Anyone at the table. Whatever you actually want to know.</p>
+      <button class="btn btn-primary" onclick="goto('s-8-2')">Start →</button>
+    </div>
+
+    <!-- 8.2 -->
+    <div class="screen" id="s-8-2">
+      <div class="eyebrow">Round 8 · Ask Anyone</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This is your chance to ask what you've been curious about.<br>Choose one person, ask one question, and keep it kind.</p></div>
+        <div class="step-block"><div class="step-num">Step 1</div><div class="step-title">❓ Ask anyone at the table one question.</div></div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">💬 They answer or pass.</div>
+          <ul class="step-body"><li>Try to ask someone who hasn't been asked yet.</li></ul>
+        </div>
+        <div class="step-block"><div class="step-title">📱 Phone owner starts, go clockwise.</div></div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-8-2-1')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-9-1')">Skip the round</div>
+    </div>
+
+    <!-- 8.2.1 -->
+    <div class="screen" id="s-8-2-1">
+      <div class="eyebrow">Round 8 · Ask Anyone</div>
+      <h2>Ask anyone <em>your question</em></h2>
+      <ul class="emoji-rules">
+        <li><span class="ico">📱</span><span>The phone owner starts</span></li>
+        <li><span class="ico">💬</span><span>Ask one person your question</span></li>
+        <li><span class="ico">🔁</span><span>Go clockwise</span></li>
+        <li><span class="ico">⏱️</span><span>Total time: 10 minutes</span></li>
+      </ul>
+      <div class="timer-display"><div class="timer-digits" id="t-8">10:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-8-3')">Finish the round</button>
+    </div>
+
+    <!-- 8.3 -->
+    <div class="screen transition-screen" id="s-8-3">
+      <div class="bubbles" id="bub-8-3"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">Good.<br>Curiosity<br>is doing its job.</div>
+      <div class="countdown" id="cd-8-3"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-9-1')">Skip</button>
+    </div>
+
+    <!-- 9.1 -->
+    <div class="screen" id="s-9-1">
+      <div class="eyebrow">Round 9</div>
+      <h1><em>The Soda<br>Bubbles</em></h1>
+      <img src="img-r9-soda.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">Turn your table into a signature cocktail.</p>
+      <button class="btn btn-primary" onclick="goto('s-9-2')">Start →</button>
+    </div>
+
+    <!-- 9.2 -->
+    <div class="screen" id="s-9-2">
+      <div class="eyebrow">Round 9 · The Soda Bubbles</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">Your table has been sparkling tonight ✨<br>Now turn it into a signature cocktail.</p></div>
+        <div class="step-block">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">Together, create:</div>
+          <ul class="step-body">
+            <li>🥳 A table name</li>
+            <li>🥤 One ingredient that makes your mix special</li>
+            <li>📝 One sentence that defines your table</li>
+          </ul>
+        </div>
+        <div class="step-block">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">➡️ Fill in your answers on the next screen.</div>
+          <ul class="step-body"><li>At the end, this becomes your table's 🥤 Soda card.</li></ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-9-3')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-10-1')">Skip the round</div>
+    </div>
+
+    <!-- 9.3 form -->
+    <div class="screen" id="s-9-3">
+      <div class="eyebrow">Round 9 · The Soda Bubbles</div>
+      <div class="form-group">
+        <div class="form-label">🥳 Your table name</div>
+        <input class="form-input" type="text" id="field-table-name" placeholder="e.g. The Usual Suspects" maxlength="60"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">🥤 One ingredient that makes your mix special<em>Example: Everyone has a trip that didn't go as planned.</em></div>
+        <textarea class="form-input" id="field-ingredient" placeholder="Your ingredient…" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <div class="form-label">📝 One sentence that defines your table<em>Example: Spider-Man lovers with suspiciously good stories.</em></div>
+        <textarea class="form-input" id="field-sentence" placeholder="Your sentence…" rows="3"></textarea>
+      </div>
+      <p class="form-note">At the end, this will become your table's Soda card 🎊</p>
+      <button class="btn btn-finish" onclick="finishR9()">Finish the round</button>
+    </div>
+
+    <!-- 9.3 -->
+    <div class="screen transition-screen" id="s-9-t">
+      <div class="bubbles" id="bub-9-t"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">Good. That's a recipe<br>for the perfect<br>cocktail.</div>
+      <div class="countdown" id="cd-9-t"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-10-1')">Skip</button>
+    </div>
+
+    <!-- 10.1 -->
+    <div class="screen" id="s-10-1">
+      <div class="eyebrow">Round 10 · Final Round</div>
+      <h1><em>Off<br>Script</em></h1>
+      <img src="img-r10-off-script.jpg" alt="" class="round-img" loading="lazy">
+      <p class="body-text">Social moments that went completely sideways.</p>
+      <button class="btn btn-primary" onclick="goto('s-10-2')">Start →</button>
+    </div>
+
+    <!-- 10.2 -->
+    <div class="screen" id="s-10-2">
+      <div class="eyebrow">Round 10 · Off Script</div>
+      <h2>The <em>rules</em></h2>
+      <div class="step-rules">
+        <div class="step-block intro-block"><p class="intro-text">This is the final story round.<br>Share a social moment that didn't go as planned.<br>Funny, awkward, unexpected — all welcome.</p></div>
+        <div class="step-block">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">🔄 Go clockwise. Phone owner starts</div>
+          <ul class="step-body">
+            <li>Share one off-script social moment</li>
+          </ul>
+        </div>
+        <div class="step-block">
+          <div class="step-title">📖 Need inspiration?</div>
+          <ul class="step-body">
+            <li>💔 A terrible Tinder date</li>
+            <li>🪩 A weird party</li>
+            <li>📱 Something you posted and immediately regretted</li>
+            <li>😬 An awkward misunderstanding</li>
+            <li>😂 A time you laughed when you absolutely shouldn't have</li>
+            <li>🏠 A weird Airbnb or hotel experience</li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('s-10-3')">Let's go →</button>
+      <div class="skip-link" onclick="skipTo('s-11')">Skip the round</div>
+    </div>
+
+    <!-- 10.3 -->
+    <div class="screen" id="s-10-3">
+      <div class="eyebrow">Round 10 · Off Script</div>
+      <h2>Tell <em>your story</em></h2>
+      <ul class="emoji-rules">
+        <li><span class="ico">😅</span><span>Go around the table</span></li>
+        <li><span class="ico">🎭</span><span>Each person tells one off-script story</span></li>
+        <li><span class="ico">🔄</span><span>The phone owner starts, then go clockwise</span></li>
+        <li><span class="ico">⏱️</span><span>Total time: 10 minutes</span></li>
+      </ul>
+      <div class="step-block" style="margin-top:4px">
+        <div class="step-title">📖 Need inspiration?</div>
+        <ul class="step-body">
+          <li>💔 A terrible Tinder date</li>
+          <li>🪩 A weird party</li>
+          <li>📱 Something you posted and immediately regretted</li>
+          <li>😬 An awkward misunderstanding</li>
+          <li>😂 A time you laughed when you absolutely shouldn't have</li>
+          <li>🏠 A weird Airbnb or hotel experience</li>
+        </ul>
+      </div>
+      <div class="timer-display"><div class="timer-digits" id="t-10">10:00</div><div class="timer-label">minutes remaining</div></div>
+      <button class="btn btn-finish" onclick="goto('s-10-t')">Finish the round</button>
+    </div>
+
+    <!-- 10.T -->
+    <div class="screen transition-screen" id="s-10-t">
+      <div class="bubbles" id="bub-10-t"></div>
+      <div class="transition-ornament">✦</div>
+      <div class="transition-text">Good. The Soda<br>is sparkling.<br>You have enough<br>to keep going.</div>
+      <div class="countdown" id="cd-10-t"></div>
+      <button class="btn-skip-trans" onclick="skipTo('s-11')">Skip</button>
+    </div>
+
+    <!-- 11 END -->
+    <div class="screen end-screen" id="s-11">
+      <div class="end-ornament">✦</div>
+      <div class="end-title">Thank you for<br>playing <em>The Soda.</em></div>
+      <p class="end-sub">The guided part is over.<br>Stay, talk, exchange contacts,<br>order another drink,<br>or disappear beautifully.</p>
+      <p class="end-sub">The rest is yours.</p>
+      <div style="width:100%;height:1px;background:var(--border);margin:4px 0"></div>
+      <p class="muted-text" style="text-align:center;font-style:italic">P.S. Remember your table's Soda card?</p>
+      <div class="soda-card" id="soda-card-display"></div>
+      <p class="body-text" style="text-align:center">Want your table on SpeakTiger's Instagram?<br>Send this to us on WhatsApp — and attach your group photo in the same chat.</p>
+      <p class="muted-text" style="text-align:center">If we post your table, everyone in the photo gets a discount for a future event.</p>
+      <button class="btn-whatsapp" onclick="sendWhatsApp()">Send on WhatsApp</button>
+      <p class="muted-text" style="text-align:center">Don't forget to attach your group photo directly in WhatsApp.</p>
+      <div style="width:100%;height:1px;background:var(--border);margin:4px 0"></div>
+      <p class="end-sub">🐯 Hosted by SpeakTiger</p>
+      <p class="end-sub">Come curious.<br>Come as you are. 🤘<br>Leave with people you actually want to see again.</p>
+      <img src="img-logo.png" alt="SpeakTiger" class="logo-img" loading="lazy">
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── R2 OPTIONS POOL ─────────────────────────────────────
+const R2_OPTIONS = [
+  "would say yes before knowing all the details",
+  "would stay calm when the plan falls apart",
+  "would notice something everyone else missed",
+  "would have a secret practical talent",
+  "would take the scenic route even when late",
+  "would try the weird option on the menu",
+  "would make a stranger feel comfortable",
+  "would turn a small errand into an adventure",
+  "would have a backup plan they pretend is spontaneous",
+  "would be good at getting un-lost",
+  "would join something random and somehow belong",
+  "would know a hidden place in the city",
+  "would be funnier than they first appear",
+  "would have one very specific luxury they defend",
+  "would make a decision just to see what happens",
+  "would have a story that starts with \"this was not the plan\"",
+  "would quietly know how to fix something",
+  "would be trusted with someone's secret",
+  "would accidentally become part of a strange situation",
+  "would choose curiosity over comfort",
+  "would have a skill that appears at the most random moment",
+  "would make a normal day turn into a story",
+  "would know when to leave and when to stay",
+  "would make a place feel familiar quickly",
+  "would be surprisingly good at improvising",
+  "would be the first to find a good deal",
+  "would have a \"don't ask, just trust me\" recommendation",
+  "would be calm during airport chaos",
+  "would bring exactly the thing everyone forgot",
+  "would be the reason a quiet night becomes eventful",
+  "would know a song for the exact moment",
+  "would be trusted to choose the snacks",
+];
+
+const R3_PROMPTS=[
+  ["A time I got lucky","A time I got lost"],
+  ["A plan that worked","A plan that collapsed"],
+  ["A good surprise","A bad surprise that became funny"],
+  ["A trip that went right","A trip that went wrong"],
+  ["A time I improvised","A time I overprepared"],
+  ["A subject I loved at school","A subject I hated at school"],
+  ["A place I love in Lisbon","A place I avoid in Lisbon"],
+  ["A restaurant I'd recommend","A restaurant I'd never return to"],
+  ["A food I loved as a kid","A food I hated as a kid"],
+  ["A movie I can rewatch forever","A movie everyone loves but I don't"],
+  ["A song I secretly love","A song I cannot hear anymore"],
+  ["A city I'd visit again","A city I don't need to visit again"],
+  ["A good date idea","A terrible date idea"],
+  ["A trend I joined","A trend I never understood"],
+  ["A childhood game I loved","A childhood game I was bad at"],
+  ["A thing I'm good at cooking","A thing I should not cook"],
+  ["A beach day","A city walk"],
+  ["A language I'd love to speak","A language that scares me"],
+  ["A skill I wish I had","A skill I didn't expect to have"],
+  ["A celebrity I'd have dinner with","A celebrity I'd avoid"],
+  ["A childhood dream job","A job I could never do"],
+  ["A good purchase","A purchase I regret"],
+  ["A habit I'm proud of","A habit I should probably stop"],
+  ["A small thing that makes me happy","A small thing that annoys me"],
+  ["A place that looked better online","A place that was better than expected"],
+  ["A good gift I gave","A good gift I received"],
+  ["A cartoon I loved as a kid","A cartoon I never understood"],
+  ["A hotel I liked","A hotel I would never recommend"],
+  ["A magical first date","An awkward break up"],
+  ["A school trip I remember","A school trip I wish I skipped"],
+];
+
+const R6_PAIRS=[
+  ["Batman","Spider-Man"],
+  ["Karaoke","Escape room"],
+  ["Planned holidays","Spontaneous holidays"],
+  ["Morning person","Night owl"],
+  ["City life","Nature life"],
+  ["Dog person","Cat person"],
+  ["Cook at home","Eat out"],
+  ["Early to everything","Fashionably late"],
+  ["Big party","Dinner for four"],
+  ["Call first","Text first"],
+  ["Museum","Cinema"],
+  ["Dress up","Keep it casual"],
+  ["Board games","Dancing"],
+  ["House party","Rooftop bar"],
+  ["Vinyl","Spotify"],
+  ["Stand-up comedy","Live concert"],
+  ["Theme park","Spa day"],
+  ["Comedy club","Theatre night"],
+  ["Street food","Fancy restaurant"],
+  ["Sushi","Pizza"],
+];
+
+const LETTERS=['A','B','C','D','E','F'];
+
+// ─── BACK MAP ────────────────────────────────────────────
+const BACK_MAP={
+  's-0-1':'home','s-0-2':'home','s-0-3':'s-0-2',
+  's-1-1':'s-0-3','s-1-1-go':'s-1-1',
+  's-2-1':'s-0-3','s-2-2-1':'s-2-1','s-2-2':'s-2-1','s-2-gr':'s-2-1',
+  's-3-1':'s-2-1','s-3-2':'s-3-1','s-3-s':'s-3-1',
+  's-4-1':'s-3-1',
+  's-4-2':'s-4-1','s-4-2-1':'s-4-1',
+  's-4-3':'s-4-1','s-4-3-1':'s-4-1',
+  's-4-4':'s-4-1','s-4-4-1':'s-4-1','s-4-4-r':'s-4-1','s-4-4-2':'s-4-1',
+  's-4-5':'s-4-1','s-4-5-1':'s-4-1','s-4-5-r':'s-4-1','s-4-5-2':'s-4-1',
+  's-4-6':'s-4-1','s-4-6-1':'s-4-1','s-4-6-r':'s-4-1','s-4-6-2':'s-4-1',
+  's-5-1':'s-4-1','s-5-2':'s-5-1','s-5-3':'s-5-1','s-5-4':'s-5-1',
+  's-6-1':'s-5-1','s-6-2':'s-6-1','s-6-x':'s-6-1',
+  's-7-1':'s-6-1',
+  's-7-2':'s-7-1','s-7-2-1':'s-7-1','s-7-3':'s-7-1','s-7-3-1':'s-7-1',
+  's-7-4':'s-7-1','s-7-4-1':'s-7-1','s-7-4-r':'s-7-1','s-7-4-2':'s-7-1',
+  's-7-5':'s-7-1','s-7-5-1':'s-7-1','s-7-5-r':'s-7-1','s-7-5-2':'s-7-1',
+  's-7-6':'s-7-1','s-7-6-1':'s-7-1','s-7-6-r':'s-7-1','s-7-6-2':'s-7-1',
+  's-8-1':'s-7-1','s-8-2':'s-8-1','s-8-2-1':'s-8-1',
+  's-9-1':'s-8-1','s-9-2':'s-9-1','s-9-3':'s-9-2','s-9-t':'s-9-2',
+  's-10-1':'s-9-1','s-10-2':'s-10-1','s-10-3':'s-10-1',
+  's-11':'s-10-1',
+};
+const NO_NAV=['s-0-01','s-1-2','s-2-x','s-3-t','s-4-t','s-5-t','s-6-t','s-7-t','s-8-3','s-9-t','s-10-t'];
+const HOME_ONLY=['s-0-1','s-0-2','s-0-2b'];
+
+// ─── STATE ───────────────────────────────────────────────
+let guestCount=0,current='s-0-01',cdTimer=null,timerIntvl=null,thinkIntvl=null;
+let r2Seq=[],r2Idx=0,r3List=[],r3Idx=0,r6List=[],r6Idx=0;
+
+// ─── UTILS ───────────────────────────────────────────────
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function fmt(s){return`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;}
+
+// ─── BUBBLES ─────────────────────────────────────────────
+function spawnBubbles(id){
+  const w=document.getElementById(id);if(!w)return;w.innerHTML='';
+  for(let i=0;i<14;i++){
+    const b=document.createElement('div');b.className='bubble';
+    const sz=5+Math.random()*16,left=3+Math.random()*94,dur=1.2+Math.random()*1.8,delay=Math.random()*2.5;
+    b.style.cssText=`width:${sz}px;height:${sz}px;left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;`;
+    w.appendChild(b);
+  }
+}
+
+// ─── TABLE SVG ───────────────────────────────────────────
+// Player positions: A at bottom (angle 90deg in SVG coords = bottom),
+// then clockwise visually means increasing angle going: bottom→left→top→right
+// In SVG: 0=right, 90=bottom, 180=left, 270=top
+// Clockwise from bottom: 90 → 180 → 270 → 0 → ... 
+// For left-turn (which is clockwise from above): A at bottom, next is to A's left = viewer's right = angle decreasing
+// Looking down at table: clockwise = A(bottom) → B(left of viewer = right of person sitting at bottom) 
+// Person sitting at bottom faces up, their left = viewer's right = 0deg in SVG
+// So: A=90, B=0, C=270, D=180 for 4 players (clockwise from person's perspective)
+function buildTableSVG(n,svgId,chainId){
+  svgId=svgId||'table-svg';chainId=chainId||'arrow-chain-wrap';
+  const svg=document.getElementById(svgId);if(!svg)return;
+  const cx=150,cy=150,tableRx=56,tableRy=32,orbitR=100,dotR=20;
+  const dotColors=['#e8c97a','#c97a5e','#7a9ec9','#9ec97a','#c97ab8','#7ac9c4'];
+
+  const baseAngle=90;
+  const angles=[];
+  for(let i=0;i<n;i++){
+    angles.push((baseAngle + i*(360/n))%360);
+  }
+
+  const toRad=a=>a*Math.PI/180;
+  const px=i=>cx+orbitR*Math.cos(toRad(angles[i]));
+  const py=i=>cy+orbitR*Math.sin(toRad(angles[i]));
+
+  const stepDur=1.4,totalDur=n*stepDur;
+
+  let out='';
+  out+=`<ellipse cx="${cx}" cy="${cy}" rx="${tableRx}" ry="${tableRy}" fill="#1a1814" stroke="#2e2b24" stroke-width="1.5"/>`;
+  out+=`<text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="16" fill="#e8c97a" opacity="0.45">📱</text>`;
+
+  for(let i=0;i<n;i++){
+    out+=`<circle cx="${px(i)}" cy="${py(i)}" r="${dotR}" fill="#181613" stroke="${dotColors[i]}" stroke-width="1.5" opacity="0.35"/>`;
+    out+=`<text x="${px(i)}" y="${py(i)+5}" text-anchor="middle" font-family="'Playfair Display',serif" font-size="14" fill="${dotColors[i]}" opacity="0.35">${LETTERS[i]}</text>`;
+    if(i===0){
+      const lx=px(0),ly=py(0);
+      const offY=ly>cy?dotR+13:-dotR-5;
+      out+=`<text x="${lx}" y="${ly+offY}" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="8" letter-spacing="1.5" fill="#6e6860" opacity="0.7">PHONE OWNER</text>`;
+    }
+  }
+
+  for(let i=0;i<n;i++){
+    const startT=(i*stepDur/totalDur).toFixed(4);
+    const midT=((i*stepDur+stepDur*0.15)/totalDur).toFixed(4);
+    const endT=((i*stepDur+stepDur*0.9)/totalDur).toFixed(4);
+    const endT2=((i*stepDur+stepDur)/totalDur).toFixed(4);
+    const kTimes=`0;${startT};${midT};${endT};${endT2};1`;
+    out+=`<circle cx="${px(i)}" cy="${py(i)}" r="${dotR}" fill="${dotColors[i]}" stroke="none">
+      <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="${kTimes}" dur="${totalDur}s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="${dotR};${dotR};${dotR+4};${dotR+4};${dotR};${dotR}" keyTimes="${kTimes}" dur="${totalDur}s" repeatCount="indefinite"/>
+    </circle>`;
+    out+=`<text x="${px(i)}" y="${py(i)+5}" text-anchor="middle" font-family="'Playfair Display',serif" font-size="14" font-weight="700" fill="#0f0e0c">
+      <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="${kTimes}" dur="${totalDur}s" repeatCount="indefinite"/>
+      ${LETTERS[i]}
+    </text>`;
+  }
+
+  svg.innerHTML=out;
+
+  const chain=document.getElementById(chainId);
+  if(chain){
+    let html='<div class="arrow-chain">';
+    for(let i=0;i<n;i++){
+      html+=`<span class="arrow-letter">${LETTERS[i]}</span>`;
+      html+=`<span class="arrow-sep">→</span>`;
+    }
+    html+=`<span class="arrow-letter">${LETTERS[0]}</span>`;
+    html+='</div>';
+    chain.innerHTML=html;
+  }
+}
+
+// pairs: array of [i,j] index pairs (0-based) to connect with a two-way arrow
+// trios: array of [i,j,k] index triples to connect with a circle
+function buildPairingSVG(n,svgId,pairs,trios,textListId){
+  const svg=document.getElementById(svgId);if(!svg)return;
+  const cx=150,cy=150,tableRx=56,tableRy=32,orbitR=100,dotR=20;
+  const dotColors=['#e8c97a','#c97a5e','#7a9ec9','#9ec97a','#c97ab8','#7ac9c4'];
+  const groupColors=['#e8c97a','#7a9ec9','#9ec97a'];
+
+  const baseAngle=90;
+  const angles=[];
+  for(let i=0;i<n;i++) angles.push((baseAngle + i*(360/n))%360);
+  const toRad=a=>a*Math.PI/180;
+  const px=i=>cx+orbitR*Math.cos(toRad(angles[i]));
+  const py=i=>cy+orbitR*Math.sin(toRad(angles[i]));
+
+  let out='';
+  out+=`<ellipse cx="${cx}" cy="${cy}" rx="${tableRx}" ry="${tableRy}" fill="#1a1814" stroke="#2e2b24" stroke-width="1.5"/>`;
+  out+=`<text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="16" fill="#e8c97a" opacity="0.45">📱</text>`;
+
+  const textListRows=[];
+
+  // pairing lines (dotted)
+  pairs.forEach((pair,gi)=>{
+    const color=groupColors[gi%groupColors.length];
+    const [a,b]=pair;
+    out+=`<line x1="${px(a)}" y1="${py(a)}" x2="${px(b)}" y2="${py(b)}" stroke="${color}" stroke-width="2" stroke-dasharray="4,4" opacity="0.7"/>`;
+    textListRows.push({color,label:`Pair ${textListRows.length+1}: Player ${LETTERS[a]} + Player ${LETTERS[b]}`});
+  });
+
+  // trio: solid lines connecting all members (triangle for 3, polygon for more)
+  trios.forEach((trio,gi)=>{
+    const color=groupColors[(pairs.length+gi)%groupColors.length];
+    for(let i=0;i<trio.length;i++){
+      const a=trio[i],b=trio[(i+1)%trio.length];
+      out+=`<line x1="${px(a)}" y1="${py(a)}" x2="${px(b)}" y2="${py(b)}" stroke="${color}" stroke-width="5" stroke-linecap="round" opacity="0.75"/>`;
+    }
+    const letters=trio.map(i=>LETTERS[i]).join(' + Player ');
+    textListRows.push({color,label:`Trio: Player ${letters}`});
+  });
+
+  // base dots
+  for(let i=0;i<n;i++){
+    out+=`<circle cx="${px(i)}" cy="${py(i)}" r="${dotR}" fill="#181613" stroke="${dotColors[i]}" stroke-width="1.5" opacity="0.7"/>`;
+    out+=`<text x="${px(i)}" y="${py(i)+5}" text-anchor="middle" font-family="'Playfair Display',serif" font-size="14" fill="${dotColors[i]}" opacity="0.9">${LETTERS[i]}</text>`;
+  }
+
+  svg.innerHTML=out;
+
+  if(textListId){
+    const listEl=document.getElementById(textListId);
+    if(listEl){
+      listEl.innerHTML=textListRows.map(r=>
+        `<div class="pairing-text-row"><span class="grp-dot" style="background:${r.color}"></span>${r.label}</div>`
+      ).join('');
+    }
+  }
+}
+
+
+// ─── PICKER ──────────────────────────────────────────────
+const pickerEl=document.getElementById('picker');
+const btn01=document.getElementById('btn-0-1');
+updateNav('s-0-01');
+for(let i=2;i<=6;i++){
+  const b=document.createElement('button');b.className='picker-btn';b.textContent=i;
+  b.onclick=()=>{guestCount=i;document.querySelectorAll('.picker-btn').forEach((x,j)=>x.classList.toggle('selected',j+2===i));btn01.disabled=false;};
+  pickerEl.appendChild(b);
+}
+
+// ─── NAV ─────────────────────────────────────────────────
+function updateNav(id){
+  const noNav=NO_NAV.includes(id),homeOnly=HOME_ONLY.includes(id);
+  document.getElementById('back-btn').classList.toggle('visible',!noNav&&!homeOnly);
+  document.getElementById('home-btn').classList.toggle('visible',!noNav&&id!=='s-0-01');
+  const logoEl=document.getElementById('topbar-logo-img');
+  if(logoEl){
+    if(id==='s-0-01'){logoEl.src='img-logo.png';logoEl.style.width='auto';}
+    else{logoEl.src='img-logo-sq.png';logoEl.style.width='32px';}
+  }
+}
+
+function goto(id){
+  clearCd();clearTimer();clearThink();
+  const outgoing=document.getElementById(current);
+  if(outgoing){outgoing.scrollTop=0;outgoing.classList.remove('active');}
+  current=id;
+  const el=document.getElementById(id);
+  el.scrollTop=0;
+  el.classList.remove('active');void el.offsetWidth;el.classList.add('active');
+  updateNav(id);
+
+  const cdMap={
+    's-1-2':['cd-1-2','s-2-1'],'s-2-x':['cd-2-x','s-3-1'],
+    's-3-t':['cd-3-t','s-4-1'],'s-4-t':['cd-4-t','s-5-1'],
+    's-5-t':['cd-5-t','s-6-1'],'s-6-t':['cd-6-t','s-7-1'],
+    's-7-t':['cd-7-t','s-8-1'],'s-8-3':['cd-8-3','s-9-1'],
+    's-9-t':['cd-9-t','s-10-1'],'s-10-t':['cd-10-t','s-11'],
+  };
+  if(cdMap[id])startCd(cdMap[id][0],cdMap[id][1]);
+
+  const bubMap={'s-1-2':'bub-1-2','s-2-x':'bub-2-x','s-3-t':'bub-3-t','s-4-t':'bub-4-t','s-5-t':'bub-5-t','s-6-t':'bub-6-t','s-7-t':'bub-7-t','s-8-3':'bub-8-3','s-9-t':'bub-9-t','s-10-t':'bub-10-t'};
+  if(bubMap[id])spawnBubbles(bubMap[id]);
+
+  const t5={'s-4-2-1':'t-4-2','s-4-3-1':'t-4-3','s-4-4-2':'t-4-4','s-4-5-2':'t-4-5','s-4-6-2':'t-4-6','s-7-2-1':'t-7-2','s-7-3-1':'t-7-3','s-7-4-2':'t-7-4','s-7-5-2':'t-7-5','s-7-6-2':'t-7-6'};
+  if(t5[id])startTimer(t5[id],300);
+  if(id==='s-1-1-go')startTimer('t-1-1',600);
+  if(id==='s-5-4')startTimer('t-5-4',600);
+  if(id==='s-8-2-1')startTimer('t-8',600);
+  if(id==='s-10-3')startTimer('t-10',600);
+  if(id==='s-5-3')startThink();
+  if(id==='s-2-gr')renderR2();
+  if(id==='s-3-s')renderR3();
+  if(id==='s-6-x')renderR6();
+  if(id==='s-11')renderSodaCard();
+  if(id==='s-2-2-1')buildTableSVG(guestCount);
+  if(id==='s-7-4')buildTableSVG(4,'table-svg-7-4',null);
+  if(id==='s-7-4-1')buildPairingSVG(4,'pairing-svg-7-4',[[0,1],[2,3]],[],'pairing-text-7-4');
+  if(id==='s-7-5')buildTableSVG(5,'table-svg-7-5',null);
+  if(id==='s-7-5-1')buildPairingSVG(5,'pairing-svg-7-5',[[0,3]],[[1,2,4]],'pairing-text-7-5');
+  if(id==='s-7-6')buildTableSVG(6,'table-svg-7-6',null);
+  if(id==='s-7-6-1')buildPairingSVG(6,'pairing-svg-7-6',[[0,4],[1,5],[2,3]],[],'pairing-text-7-6');
+  if(id==='s-4-4')buildTableSVG(4,'table-svg-4-4',null);
+  if(id==='s-4-4-1')buildPairingSVG(4,'pairing-svg-4-4',[[0,2],[1,3]],[],'pairing-text-4-4');
+  if(id==='s-4-5')buildTableSVG(5,'table-svg-4-5',null);
+  if(id==='s-4-5-1')buildPairingSVG(5,'pairing-svg-4-5',[[0,2]],[[1,3,4]],'pairing-text-4-5');
+  if(id==='s-4-6')buildTableSVG(6,'table-svg-4-6',null);
+  if(id==='s-4-6-1')buildPairingSVG(6,'pairing-svg-4-6',[[0,3],[1,4],[2,5]],[],'pairing-text-4-6');
+}
+
+function goBack(){
+  const dest=BACK_MAP[current];if(!dest)return;
+  if(dest==='home'){goHome();return;}
+  clearTimer();clearThink();
+  if(dest==='s-2-gr'&&r2Idx>0)r2Idx--;
+  if(dest==='s-3-s'&&r3Idx>0)r3Idx--;
+  if(dest==='s-6-x'&&r6Idx>0)r6Idx--;
+  const outBack=document.getElementById(current);
+  if(outBack)outBack.scrollTop=0;
+  goto(dest);
+}
+
+function goHome(){
+  clearCd();clearTimer();clearThink();
+  guestCount=0;r2Idx=0;r2Seq=[];r3Idx=0;r3List=[];r6Idx=0;r6List=[];
+  document.querySelectorAll('.picker-btn').forEach(b=>b.classList.remove('selected'));
+  btn01.disabled=true;
+  const outHome=document.getElementById(current);
+  if(outHome){outHome.scrollTop=0;outHome.classList.remove('active');}
+  current='s-0-01';
+  const el=document.getElementById('s-0-01');
+  el.scrollTop=0;
+  el.classList.remove('active');void el.offsetWidth;el.classList.add('active');
+  updateNav('s-0-01');
+}
+
+function skipTo(id){
+  clearCd();clearTimer();clearThink();
+  const outgoing=document.getElementById(current);
+  if(outgoing){outgoing.scrollTop=0;outgoing.classList.remove('active');}
+  current=id;
+  const el=document.getElementById(id);
+  el.scrollTop=0;
+  el.classList.remove('active');void el.offsetWidth;el.classList.add('active');
+  updateNav(id);
+  if(id==='s-2-gr')renderR2();
+  if(id==='s-3-s')renderR3();
+  if(id==='s-6-x')renderR6();
+  if(id==='s-5-4')startTimer('t-5-4',600);
+  if(id==='s-11')renderSodaCard();
+}
+
+// ─── COUNTDOWN ───────────────────────────────────────────
+function startCd(labelId,nextId){
+  let s=5;const lbl=document.getElementById(labelId);
+  if(lbl)lbl.textContent=`Continuing in ${s}s`;
+  cdTimer=setInterval(()=>{s--;if(s<=0){clearCd();goto(nextId);}else if(lbl)lbl.textContent=`Continuing in ${s}s`;},1000);
+}
+function clearCd(){if(cdTimer){clearInterval(cdTimer);cdTimer=null;}}
+
+// ─── TIMERS ──────────────────────────────────────────────
+function startTimer(elId,secs){
+  clearTimer();let s=secs;const el=document.getElementById(elId);
+  function tick(){if(!el)return;el.textContent=fmt(s);el.classList.toggle('urgent',s<=60);if(s<=0)clearTimer();else s--;}
+  tick();timerIntvl=setInterval(tick,1000);
+}
+function clearTimer(){if(timerIntvl){clearInterval(timerIntvl);timerIntvl=null;}}
+
+function startThink(){
+  clearThink();let s=90;const el=document.getElementById('t-5-3');
+  function tick(){if(!el)return;el.textContent=fmt(s);el.classList.toggle('urgent',s<=20);if(s<=0){clearThink();goto('s-5-4');}else s--;}
+  tick();thinkIntvl=setInterval(tick,1000);
+}
+function clearThink(){if(thinkIntvl){clearInterval(thinkIntvl);thinkIntvl=null;}}
+
+// ─── NUMBERING ───────────────────────────────────────────
+function buildNumbering(cid,n){
+  const colors=['','var(--accent)','var(--accent2)','#7a9ec9','#9ec97a','#c97ab8','#7ac9c4'];
+  const el=document.getElementById(cid);if(!el)return;
+  let html=`<p style="font-size:12px;color:var(--muted);padding:0 4px 4px">Phone owner is Player 1, then go clockwise:</p>`;
+  for(let i=1;i<=n;i++)html+=`<div class="pair-row"><div class="pair-dot" style="background:${colors[i]}">${i}</div><span class="pair-name">${i===1?'Phone owner':'Player '+i}</span></div>`;
+  el.innerHTML=html;
+}
+
+// ─── ROUND 2 ─────────────────────────────────────────────
+function startR2(){
+  const pool=shuffle(R2_OPTIONS);let cur=0;
+  r2Seq=[];
+  for(let i=0;i<guestCount;i++){
+    const guesser=LETTERS[i];
+    const responder=LETTERS[(i+1)%guestCount];
+    r2Seq.push({type:'G',player:guesser,options:[pool[cur++%pool.length],pool[cur++%pool.length],pool[cur++%pool.length]]});
+    r2Seq.push({type:'R',player:responder});
+  }
+  r2Idx=0;goto('s-2-gr');
+}
+
+function renderR2(){
+  const step=r2Seq[r2Idx],total=r2Seq.length,isLast=r2Idx===total-1;
+  const pct=((r2Idx+1)/total)*100;
+  const el=document.getElementById('s-2-gr');
+  const prog=`<div class="progress-wrap"><div class="progress-label"><span>Round 2</span><span>${r2Idx+1} / ${total}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+  const skipRound=isLast?'':`<div class="skip-link" onclick="skipTo('s-3-1')">Skip the round</div>`;
+  const dotColors=['#e8c97a','#c97a5e','#7a9ec9','#9ec97a','#c97ab8','#7ac9c4'];
+  const letters=['A','B','C','D','E','F'];
+  const pIdx=letters.indexOf(step.player);
+  const pColor=dotColors[pIdx>=0?pIdx:0];
+  const circle=`<span class="player-circle" style="background:${pColor}">${step.player}</span>`;
+
+  if(step.type==='G'){
+    const sublabel=r2Idx===0?'Phone owner · Your turn to guess':'Your turn to guess';
+    const opts=step.options.slice(0,2);
+    const orOptions=`<div class="tot-side">${opts[0]}</div><div class="tot-divider">or</div><div class="tot-side">${opts[1]||''}</div>`;
+    el.innerHTML=`${prog}
+      <div class="player-heading">${circle}<div><div class="player-label">Player ${step.player}</div><div class="player-sublabel">${sublabel}</div></div></div>
+      <h2>The person on your left seems like <em>someone who…</em></h2>
+      <div class="tot-card">${orOptions}</div>
+      <p class="muted-text">Choose one and explain why — one sentence.</p>
+      <button class="btn ${isLast?'btn-finish':'btn-outline'}" onclick="advR2()">${isLast?'Finish the round':'Next →'}</button>
+      ${skipRound}`;
+  } else {
+    el.innerHTML=`${prog}
+      <div class="player-heading">${circle}<div><div class="player-label">Player ${step.player}</div><div class="player-sublabel">Your turn to respond</div></div></div>
+      <h2>Was the first impression <em>right?</em></h2>
+      <div class="tot-card">
+        <div class="tot-side">Correct it, confirm it or answer with another story</div>
+      </div>
+      <button class="btn ${isLast?'btn-finish':'btn-outline'}" onclick="advR2()">${isLast?'Finish the round':'Next →'}</button>
+      ${skipRound}`;
+  }
+}
+function advR2(){
+  if(r2Idx===r2Seq.length-1){goto('s-2-x');return;}
+  r2Idx++;renderR2();
+  const el=document.getElementById('s-2-gr');el.scrollTop=0;el.classList.remove('active');void el.offsetWidth;el.classList.add('active');
+}
+
+// ─── ROUND 3 ─────────────────────────────────────────────
+function startR3(){
+  const pairs=shuffle(R3_PROMPTS).slice(0,guestCount);
+  r3List=pairs.map((p,i)=>({pair:p,player:LETTERS[i]}));
+  r3Idx=0;goto('s-3-s');
+}
+function renderR3(){
+  const step=r3List[r3Idx],total=r3List.length,isLast=r3Idx===total-1;
+  const p=step.pair;
+  const pct=((r3Idx+1)/total)*100;
+  const el=document.getElementById('s-3-s');
+  const skipRound=isLast?'':`<div class="skip-link" onclick="skipTo('s-4-1')">Skip the round</div>`;
+  const sublabel=r3Idx===0?'Phone owner · Your turn':'Your turn';
+  const r3Colors=['#e8c97a','#c97a5e','#7a9ec9','#9ec97a','#c97ab8','#7ac9c4'];
+  const r3Color=r3Colors[r3Idx%r3Colors.length];
+  const r3Letter=String.fromCharCode(65+r3Idx);
+  const r3Circle=`<span class="player-circle" style="background:${r3Color}">${r3Letter}</span>`;
+  el.innerHTML=`
+    <div class="progress-wrap"><div class="progress-label"><span>Round 3</span><span>${r3Idx+1} / ${total}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+    <div class="player-heading">${r3Circle}<div><div class="player-label">Player ${r3Letter}</div><div class="player-sublabel">${sublabel}</div></div></div>
+    <h2><em>This or that?</em></h2>
+    <div class="tot-card">
+      <div class="tot-side">${p[0]}</div>
+      <div class="tot-divider">or</div>
+      <div class="tot-side">${p[1]}</div>
+    </div>
+    <p class="muted-text">Choose one and tell the story.</p>
+    <button class="btn ${isLast?'btn-finish':'btn-outline'}" onclick="advR3()">${isLast?'Finish the round':'Next →'}</button>
+    ${skipRound}`;
+}
+function advR3(){
+  if(r3Idx===r3List.length-1){goto('s-3-t');return;}
+  r3Idx++;renderR3();
+  const el=document.getElementById('s-3-s');el.scrollTop=0;el.classList.remove('active');void el.offsetWidth;el.classList.add('active');
+}
+
+// ─── SODA CARD STATE ─────────────────────────────────────
+let sodaName='', sodaIngredient='', sodaSentence='';
+
+function finishR9(){
+  sodaName = document.getElementById('field-table-name')?.value.trim() || '—';
+  sodaIngredient = document.getElementById('field-ingredient')?.value.trim() || '—';
+  sodaSentence = document.getElementById('field-sentence')?.value.trim() || '—';
+  goto('s-9-t');
+}
+
+function sendWhatsApp(){
+  function stripEmoji(str){
+    return str.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FEFF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA9F}]/gu, '').replace(/\s+/g,' ').trim();
+  }
+  const parts = [
+    'Hey SpeakTiger! Here is our table Soda card:',
+    'Table name: ' + stripEmoji(sodaName),
+    'Ingredient: ' + stripEmoji(sodaIngredient),
+    'We are: ' + stripEmoji(sodaSentence),
+  ].join(' / ');
+  window.open('https://wa.me/351933478767?text=' + encodeURIComponent(parts), '_blank');
+}
+
+function renderSodaCard(){
+  const el = document.getElementById('soda-card-display');
+  if(!el) return;
+  if(!sodaName && !sodaIngredient && !sodaSentence){
+    el.innerHTML = `<p style="font-size:14px;color:var(--muted);text-align:center;padding:8px 0">You didn't fill in the Soda card — that's ok.<br>You can still send us your group photo on WhatsApp.</p>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="soda-card-row"><span class="ico">🥳</span><span>${sodaName||'—'}</span></div>
+    <div class="soda-card-row"><span class="ico">🥤</span><span>${sodaIngredient||'—'}</span></div>
+    <div class="soda-card-row"><span class="ico">📝</span><span>${sodaSentence||'—'}</span></div>`;
+}
+
+// ─── ROUND 4 ─────────────────────────────────────────────
+function startR4(){
+  const map={2:'s-4-2',3:'s-4-3',4:'s-4-4',5:'s-4-5',6:'s-4-6'};goto(map[guestCount]);
+}
+
+// ─── ROUND 6 ─────────────────────────────────────────────
+function startR6(){
+  r6List=shuffle(R6_PAIRS).slice(0,guestCount+2);r6Idx=0;goto('s-6-x');
+}
+function renderR6(){
+  const pair=r6List[r6Idx],total=r6List.length,isLast=r6Idx===total-1;
+  const pct=((r6Idx+1)/total)*100;
+  const el=document.getElementById('s-6-x');
+  const skipRound=isLast?'':`<div class="skip-link" onclick="skipTo('s-7-1')">Skip the round</div>`;
+  el.innerHTML=`
+    <div class="progress-wrap"><div class="progress-label"><span>Round 6</span><span>${r6Idx+1} / ${total}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+    <div class="eyebrow">Pick a side</div>
+    <h2>Place your finger on the table near the option you <em>choose</em> 👇</h2>
+    <div class="side-card">
+      <div class="side-btn left-side"><div class="side-label">Left</div>${pair[0]}</div>
+      <div class="side-btn right-side"><div class="side-label">Right</div>${pair[1]}</div>
+    </div>
+    <button class="btn ${isLast?'btn-finish':'btn-outline'}" onclick="advR6()">${isLast?'Finish the round':'Next →'}</button>
+    ${skipRound}`;
+}
+function advR6(){
+  if(r6Idx===r6List.length-1){goto('s-6-t');return;}
+  r6Idx++;renderR6();
+  const el=document.getElementById('s-6-x');el.scrollTop=0;el.classList.remove('active');void el.offsetWidth;el.classList.add('active');
+}
+
+// ─── ROUND 7 ─────────────────────────────────────────────
+function startR7(){
+  const map={2:'s-7-2',3:'s-7-3',4:'s-7-4',5:'s-7-5',6:'s-7-6'};
+  goto(map[guestCount]);
+}
+</script>
+</body>
+</html>
