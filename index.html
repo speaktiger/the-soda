@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Soda — see you at the next table</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e0c;--card:#181613;--accent:#e8c97a;--accent2:#c97a5e;--text:#f0ead8;--muted:#6e6860;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;overflow:hidden;position:relative;
+  padding:32px 24px;
+}
+/* grain, same as the app */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:2;}
+
+.bubbles{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+.bubble{position:absolute;bottom:-40px;border-radius:50%;background:rgba(232,201,122,0.09);border:1px solid rgba(232,201,122,0.12);animation:riseUp linear infinite;}
+@keyframes riseUp{0%{transform:translateY(0) scale(1);opacity:0.8;}100%{transform:translateY(-120vh) scale(0.45);opacity:0;}}
+@media (prefers-reduced-motion: reduce){.bubble{animation:none;opacity:0.25;}}
+
+.wrap{position:relative;z-index:1;max-width:520px;display:flex;flex-direction:column;align-items:center;gap:22px;}
+.eyebrow{font-size:12px;letter-spacing:0.28em;text-transform:uppercase;color:var(--accent);opacity:0.85;}
+.glass{font-size:56px;line-height:1;filter:saturate(0.85);}
+h1{font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(34px,9vw,52px);line-height:1.15;}
+h1 em{font-style:italic;color:var(--accent);}
+.lede{font-size:16.5px;line-height:1.65;color:var(--text);opacity:0.82;max-width:400px;}
+.divider{width:44px;height:1px;background:var(--muted);opacity:0.6;}
+.next{font-size:14px;color:var(--muted);line-height:1.6;}
+.btn{
+  display:inline-block;margin-top:2px;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;letter-spacing:0.04em;
+  color:var(--bg);background:var(--accent);
+  padding:14px 30px;border-radius:999px;text-decoration:none;
+  transition:transform .15s ease,opacity .15s ease;
+}
+.btn:hover{transform:translateY(-1px);opacity:0.92;}
+.btn:focus-visible{outline:2px solid var(--text);outline-offset:3px;}
+.foot{position:fixed;bottom:20px;left:0;right:0;z-index:1;font-size:11.5px;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="bubbles" aria-hidden="true" id="bubbles"></div>
+
+<main class="wrap">
+  <div class="eyebrow">A SpeakTiger Experience</div>
+  <div class="glass" aria-hidden="true">🥤</div>
+  <h1>The Soda is <em>resting.</em></h1>
+  <p class="lede">Tonight's stories have been told and the glasses are empty. The app wakes up again at the next event.</p>
+  <div class="divider" aria-hidden="true"></div>
+  <p class="next">Want a seat at the next table?</p>
+  <a class="btn" href="https://www.instagram.com/speaktiger_pt" rel="noopener">Follow @speaktiger_pt →</a>
+</main>
+
+<div class="foot">SpeakTiger · Lisbon</div>
+
+<script>
+// gentle golden fizz, same spirit as the app's transitions
+const wrap=document.getElementById('bubbles');
+for(let i=0;i<16;i++){
+  const b=document.createElement('div');
+  b.className='bubble';
+  const s=6+Math.random()*22;
+  b.style.width=s+'px';b.style.height=s+'px';
+  b.style.left=(Math.random()*100)+'%';
+  b.style.animationDuration=(9+Math.random()*10)+'s';
+  b.style.animationDelay=(-Math.random()*14)+'s';
+  wrap.appendChild(b);
+}
+</script>
+</body>
+</html>
